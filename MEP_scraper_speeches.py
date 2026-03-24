@@ -19,7 +19,7 @@ driver = webdriver.Chrome(service=service, options=options)
 url = input("Enter the MEP's 'Contributions to plenary debates' page URL: ")
 
 driver.get(url)
-# Handle cookie popup
+# Cookie popup handler
 try:
     time.sleep(1)
     cookie_button = WebDriverWait(driver, 5).until(
@@ -50,7 +50,6 @@ while True:
         elems = driver.find_elements(By.XPATH, "//a[@href]")
         href_links = [e.get_attribute("href") for e in elems if "doceo" in e.get_attribute("href")]
 
-        # Add remaining links to the list
         links.extend(href_links)
 
         webpage_links_count = len([e for e in elems if "doceo" in e.get_attribute("href")])
@@ -65,7 +64,6 @@ while True:
 
 speeches = list()
 
-# Scrape speeches
 for link in links:
     speech_r = requests.get(link)
     speech_soup = BeautifulSoup(speech_r.content, 'html.parser')
@@ -73,7 +71,7 @@ for link in links:
     speech = speech_element.get_text(strip=True)
     speeches.append(speech)
 
-# Save speeches to CSV file
+# Save speeches to CSV file and drop duplicates
 csv_filename = "speeches.csv"
 with open(csv_filename, "w", newline="", encoding="utf-8") as csvfile:
     writer = csv.writer(csvfile)
@@ -82,10 +80,7 @@ with open(csv_filename, "w", newline="", encoding="utf-8") as csvfile:
 
 print("Speeches have been saved to", csv_filename)
 
-# Read the CSV file into a DataFrame
 df = pd.read_csv("speeches.csv")
-
-# Drop duplicates based on the 'Speech' column
 df.drop_duplicates(subset='Speech', inplace=True)
 
 # Save the result back to the CSV file
